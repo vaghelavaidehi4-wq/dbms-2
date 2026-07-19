@@ -1,0 +1,430 @@
+P1.11  Date Function Playground   [Easy]  [SYSDATE, ADD_MONTHS, LAST_DAY, NEXT_DAY, TO_CHAR date formats]
+Problem Statement:  Write a block that prints: (1) Today in format "Day, DDth Month YYYY" using TO_CHAR(SYSDATE,'Day, DD "th" Month YYYY'), (2) Date after N months using ADD_MONTHS(SYSDATE, N), (3) Last day of the current month using LAST_DAY, (4) Date of next Monday using NEXT_DAY(SYSDATE,'MONDAY'), (5) Number of days left in this month = LAST_DAY(SYSDATE) - SYSDATE (TRUNC it). Label every output line clearly.
+Code Starter / Hint:  DBMS_OUTPUT.PUT_LINE(TO_CHAR(SYSDATE,'Day, DD Month YYYY')); DBMS_OUTPUT.PUT_LINE(ADD_MONTHS(SYSDATE, v_n)); DBMS_OUTPUT.PUT_LINE(TRUNC(LAST_DAY(SYSDATE) - SYSDATE)||' days left');
+Anti-Plagiarism Personalisation:  Roll Number Seed — N (months to add) = roll_no MOD 12 + 1.
+Worked Example:  Roll#1 on 06-Jul-2026: N=2 => ADD_MONTHS gives 06-Sep-2026, LAST_DAY=31-Jul-2026, 25 days left
+
+answer
+
+
+DECLARE
+    v_roll NUMBER := 3;
+    v_n    NUMBER;
+BEGIN
+    v_n := MOD(v_roll,12) + 1;
+    DBMS_OUTPUT.PUT_LINE('Today           : ' ||
+        TO_CHAR(SYSDATE,'Day, DD "th" Month YYYY'));
+    DBMS_OUTPUT.PUT_LINE('After ' || v_n || ' Months : ' ||
+        TO_CHAR(ADD_MONTHS(SYSDATE,v_n),'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE('Last Day        : ' ||
+        TO_CHAR(LAST_DAY(SYSDATE),'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE('Next Monday     : ' ||
+        TO_CHAR(NEXT_DAY(SYSDATE,'MONDAY'),'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE('Days Left       : ' ||
+        TRUNC(LAST_DAY(SYSDATE)-SYSDATE) || ' days');
+END;
+/
+
+Output:
+Today		: Sunday   , 12 th July      2026
+After 4 Months : 12-NOV-2026
+Last Day	: 31-JUL-2026
+Next Monday	: 13-JUL-2026
+Days Left	: 19 days
+
+P1.12  Result Card with BOOLEAN and NVL   [Easy]  [BOOLEAN, NVL, comparison, CASE expression]
+Problem Statement:  Declare marks for 5 subjects: v_m1..v_m5 NUMBER, where v_m5 is NULL (student was absent). Use NVL(v_m5, 0) while totalling. Calculate total and percentage (out of 500). Declare v_passed BOOLEAN := (percentage >= 40). Print total, percentage and result. Remember: you cannot pass a BOOLEAN directly to DBMS_OUTPUT.PUT_LINE — use a CASE expression or IF to convert it to text. Show this limitation in a comment.
+Code Starter / Hint:  v_total := v_m1+v_m2+v_m3+v_m4+NVL(v_m5,0); v_pct := ROUND(v_total/500*100,2); DBMS_OUTPUT.PUT_LINE(CASE WHEN v_passed THEN 'PASS' ELSE 'FAIL' END);
+Anti-Plagiarism Personalisation:  Roll Number Seed — each subject mark = roll_no MOD 30 + 60 (v_m5 stays NULL).
+Worked Example:  Roll#1: four subjects at 61 each + NULL => total=244, pct=48.80 PASS | Roll#35: marks=65 => total=260, 52% PASS
+
+answer
+
+
+DECLARE
+    v_roll    NUMBER := 1;
+    v_m1 NUMBER;
+    v_m2 NUMBER;
+    v_m3 NUMBER;
+    v_m4 NUMBER;
+    v_m5 NUMBER := NULL;
+    v_total   NUMBER;
+    v_pct     NUMBER;
+    v_passed  BOOLEAN;
+BEGIN
+    v_m1 := MOD(v_roll,30) + 5;
+    v_m2 := MOD(v_roll,30) + 0;
+    v_m3 := MOD(v_roll,30) + 20;
+    v_m4 := MOD(v_roll,30) + 10;
+
+    v_total := v_m1 + v_m2 + v_m3 + v_m4 + NVL(v_m5,0);
+    v_pct := ROUND((v_total/500)*100,2);
+    v_passed := (v_pct >= 40);
+    DBMS_OUTPUT.PUT_LINE('Marks 1     : ' || v_m1);
+    DBMS_OUTPUT.PUT_LINE('Marks 2     : ' || v_m2);
+    DBMS_OUTPUT.PUT_LINE('Marks 3     : ' || v_m3);
+    DBMS_OUTPUT.PUT_LINE('Marks 4     : ' || v_m4);
+    DBMS_OUTPUT.PUT_LINE('Marks 5     : ' || NVL(v_m5,0));
+    DBMS_OUTPUT.PUT_LINE('Total       : ' || v_total);
+    DBMS_OUTPUT.PUT_LINE('Percentage  : ' || v_pct || '%');
+
+    IF v_passed THEN
+        DBMS_OUTPUT.PUT_LINE('Result      : PASS');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Result      : FAIL');
+    END IF;
+END;
+/
+
+Output:
+Marks 1     : 6
+Marks 2     : 1
+Marks 3     : 21
+Marks 4     : 11
+Marks 5     : 0
+Total	    : 39
+Percentage  : 7.8%
+Result	    : FAIL
+
+P1.13  ATM Note Splitter   [Easy]  [MOD, TRUNC, integer arithmetic]
+Problem Statement:  An ATM must dispense a withdrawal amount using minimum notes of Rs.500, 200, 100. Declare v_amount NUMBER. Using TRUNC division and MOD, calculate how many notes of each denomination are needed and the remaining amount that cannot be dispensed (less than 100). Print a note-wise breakup. Example logic: n500 = TRUNC(amount/500); rem = MOD(amount,500); and so on.
+Code Starter / Hint:  v_n500 := TRUNC(v_amt/500); v_rem := MOD(v_amt,500); v_n200 := TRUNC(v_rem/200); v_rem := MOD(v_rem,200); v_n100 := TRUNC(v_rem/100);
+Anti-Plagiarism Personalisation:  Roll Number Seed — amount = roll_no * 137 + 1000.
+Worked Example:  Roll#1: amount=1137 => 2x500 + 0x200 + 1x100, undispensed=37 | Roll#10: amount=2370 => 4x500 + 1x200 + 1x100, undispensed=70
+
+answer
+
+DECLARE
+    v_no   NUMBER := 20;
+    v_amt    NUMBER;
+
+    v_n500   NUMBER;
+    v_n200   NUMBER;
+    v_n100   NUMBER;
+    v_rem    NUMBER;
+BEGIN
+    v_amt := v_no * 256 + 1000;
+    v_n500 := TRUNC(v_amt / 500);
+    v_rem := MOD(v_amt, 500);
+    v_n200 := TRUNC(v_rem / 200);
+    v_rem := MOD(v_rem, 200);
+    v_n100 := TRUNC(v_rem / 100);
+    v_rem := MOD(v_rem, 100);
+
+    DBMS_OUTPUT.PUT_LINE('Withdrawal Amount : ' || v_amt);
+    DBMS_OUTPUT.PUT_LINE('500 Notes         : ' || v_n500);
+    DBMS_OUTPUT.PUT_LINE('200 Notes         : ' || v_n200);
+    DBMS_OUTPUT.PUT_LINE('100 Notes         : ' || v_n100);
+    DBMS_OUTPUT.PUT_LINE('Undispensed Amount: ' || v_rem);
+END;
+/
+
+Output:
+Withdrawal Amount : 6120
+500 Notes	  : 12
+200 Notes	  : 0
+100 Notes	  : 1
+Undispensed Amount: 20
+
+P1.14  Mobile Recharge Receipt   [Medium]  [CONSTANT, arithmetic, TO_CHAR number formats, RPAD]
+Problem Statement:  Build a Jio/Airtel recharge receipt. Declare c_gst CONSTANT NUMBER := 18 and a base plan price. Calculate GST amount and total payable. Print a receipt aligned with RPAD: plan name, base price, GST @18%, and total — amounts formatted with TO_CHAR(value, '99,999.99'). Add validity date = SYSDATE + 28 printed as DD-MON-YYYY.
+Code Starter / Hint:  v_gst := v_plan * c_gst/100; v_total := v_plan + v_gst; DBMS_OUTPUT.PUT_LINE(RPAD('Total:',15)||TO_CHAR(v_total,'99,999.99')); DBMS_OUTPUT.PUT_LINE(TO_CHAR(SYSDATE+28,'DD-MON-YYYY'));
+Anti-Plagiarism Personalisation:  Roll Number Seed — plan price: pick from (199, 299, 399, 599) using index = roll_no MOD 4 + 1.
+Worked Example:  Roll#1: plan=299 => GST=53.82, total=352.82 | Roll#4: plan=199 => GST=35.82, total=234.82
+
+answer
+
+DECLARE
+    c_gst CONSTANT NUMBER := 18;
+
+    v_roll  NUMBER := 3;
+    v_plan  NUMBER;
+    v_gst   NUMBER;
+    v_total NUMBER;
+BEGIN
+    IF MOD(v_roll,4)+1 = 1 THEN
+        v_plan := 199;
+    ELSIF MOD(v_roll,4)+1 = 2 THEN
+        v_plan := 299;
+    ELSIF MOD(v_roll,4)+1 = 3 THEN
+        v_plan := 399;
+    ELSE
+        v_plan := 599;
+    END IF;
+    v_gst := v_plan * c_gst / 100;
+    v_total := v_plan + v_gst;
+    DBMS_OUTPUT.PUT_LINE('      JIO RECHARGE RECEIPT');
+    DBMS_OUTPUT.PUT_LINE(RPAD('Plan Price',15) || TO_CHAR(v_plan,'99,999.99'));
+    DBMS_OUTPUT.PUT_LINE(RPAD('GST @18%',15) || TO_CHAR(v_gst,'99,999.99'));
+    DBMS_OUTPUT.PUT_LINE(RPAD('Total',15) || TO_CHAR(v_total,'99,999.99'));
+    DBMS_OUTPUT.PUT_LINE(RPAD('Valid Till',15) || TO_CHAR(SYSDATE+28,'DD-MON-YYYY'));
+END;
+/
+
+Output:
+JIO RECHARGE RECEIPT
+Plan Price	   599.00
+GST @18%	   107.82
+Total		   706.82
+Valid Till     09-AUG-2026
+
+P1.15  Department Statistics with SELECT INTO   [Medium]  [SELECT INTO with aggregates, COUNT, AVG, MAX, group functions]
+Problem Statement:  A single SELECT INTO can fetch aggregate results too. For a given department_id, fetch in ONE query: COUNT(*), ROUND(AVG(salary),2) and MAX(salary) of employees into three variables. Print a department summary. Then answer in a comment: why does SELECT INTO with COUNT(*) never raise NO_DATA_FOUND even for a department with no employees?
+Code Starter / Hint:  SELECT COUNT(*), ROUND(AVG(salary),2), MAX(salary) INTO v_cnt, v_avg, v_max FROM employees WHERE department_id = v_dept;
+Anti-Plagiarism Personalisation:  Roll Number Seed — department_id = (roll_no MOD 6 + 1) * 10.
+Worked Example:  Roll#1: dept=20 => count=2, avg=9500, max=13000 | Roll#5: dept=60 (IT) => count=5, avg=5760, max=9000
+
+answer
+
+CREATE TABLE EMPLOYEES (
+    EMP_ID NUMBER PRIMARY KEY,
+    EMP_NAME VARCHAR2(30),
+    SALARY NUMBER,
+    DEPARTMENT_ID NUMBER
+);
+
+INSERT INTO EMPLOYEES VALUES (101, 'Amit', 8000, 20);
+INSERT INTO EMPLOYEES VALUES (102, 'Neha', 11000, 20);
+INSERT INTO EMPLOYEES VALUES (103, 'Rahul', 5000, 10);
+INSERT INTO EMPLOYEES VALUES (104, 'Priya', 7000, 10);
+INSERT INTO EMPLOYEES VALUES (105, 'Rohan', 9000, 30);
+
+DECLARE
+    v_roll        NUMBER := 1;
+    v_department  NUMBER;
+
+    v_count       NUMBER;
+    v_avg_salary  NUMBER;
+    v_max_salary  NUMBER;
+
+BEGIN
+    v_department := (MOD(v_roll,6)+1)*10;
+    SELECT COUNT(*),
+           ROUND(AVG(salary),2),
+           MAX(salary)
+    INTO v_count,
+         v_avg_salary,
+         v_max_salary
+    FROM employees
+    WHERE department_id = v_department;
+    DBMS_OUTPUT.PUT_LINE('Department ID    : ' || v_department);
+    DBMS_OUTPUT.PUT_LINE('Employee Count   : ' || v_count);
+    DBMS_OUTPUT.PUT_LINE('Average Salary   : ' || v_avg_salary);
+    DBMS_OUTPUT.PUT_LINE('Maximum Salary   : ' || v_max_salary);
+
+END;
+/
+
+Output:
+Department ID    : 20
+Employee Count   : 2
+Average Salary   : 9500
+Maximum Salary   : 11000
+
+P1.16  Department Lookup with %TYPE   [Medium]  [%TYPE anchored declarations, SELECT INTO, NO_DATA_FOUND]
+Problem Statement:  Declare v_dname departments.department_name%TYPE and v_loc departments.location_id%TYPE. Fetch the department name and location for a seeded department_id. Print: "Dept [id]: [name] at location [loc]". Handle NO_DATA_FOUND. Then in a comment explain: if the DBA later changes department_name from VARCHAR2(30) to VARCHAR2(60), why does your block still work without any edit? That is the whole point of %TYPE.
+Code Starter / Hint:  v_dname departments.department_name%TYPE; SELECT department_name, location_id INTO v_dname, v_loc FROM departments WHERE department_id = v_id;
+Anti-Plagiarism Personalisation:  Roll Number Seed — department_id = ((roll_no + 2) MOD 11 + 1) * 10.
+Worked Example:  Roll#1: dept_id=40 => Human Resources at 2400 | Roll#8: dept_id=110 => Accounting at 1700
+
+answer
+
+CREATE TABLE DEPARTMENTS (
+    DEPARTMENT_ID NUMBER PRIMARY KEY,
+    DEPARTMENT_NAME VARCHAR2(30),
+    LOCATION_ID NUMBER
+);
+
+INSERT INTO DEPARTMENTS VALUES (10,'Administration',1700);
+INSERT INTO DEPARTMENTS VALUES (20,'Marketing',1800);
+INSERT INTO DEPARTMENTS VALUES (30,'Purchasing',1700);
+INSERT INTO DEPARTMENTS VALUES (40,'Human Resources',2400);
+INSERT INTO DEPARTMENTS VALUES (50,'Shipping',1500);
+INSERT INTO DEPARTMENTS VALUES (60,'IT',1400);
+INSERT INTO DEPARTMENTS VALUES (70,'Public Relations',2700);
+INSERT INTO DEPARTMENTS VALUES (80,'Sales',2500);
+INSERT INTO DEPARTMENTS VALUES (90,'Executive',1700);
+INSERT INTO DEPARTMENTS VALUES (100,'Finance',1700);
+INSERT INTO DEPARTMENTS VALUES (110,'Accounting',1700);
+
+DECLARE
+    v_roll NUMBER := 1;
+    v_id   NUMBER;
+    v_dname DEPARTMENTS.DEPARTMENT_NAME%TYPE;
+    v_loc   DEPARTMENTS.LOCATION_ID%TYPE;
+BEGIN
+    v_id := ((v_roll + 2) MOD 11 + 1) * 10;
+    SELECT DEPARTMENT_NAME, LOCATION_ID
+    INTO v_dname, v_loc
+    FROM DEPARTMENTS
+    WHERE DEPARTMENT_ID = v_id;
+    DBMS_OUTPUT.PUT_LINE('Department ID : ' || v_id);
+    DBMS_OUTPUT.PUT_LINE('Department Name : ' || v_dname);
+    DBMS_OUTPUT.PUT_LINE('Location ID : ' || v_loc);
+END;
+/
+
+Output:
+Department ID : 40
+Department Name : Human Resources
+Location ID : 2400
+
+P1.17  Home Loan EMI Calculator   [Medium]  [POWER, ROUND, arithmetic, TO_CHAR]
+Problem Statement:  Build an SBI home loan EMI calculator. Variables: v_p (principal), v_annual_rate := 9, v_years := 5. Compute monthly rate r = annual/12/100 and n = years*12. EMI = P * r * POWER(1+r, n) / (POWER(1+r, n) - 1). Also compute total payment = EMI * n and total interest = total - P. Print all three with TO_CHAR comma formatting. Bonus: print what % of your total payment is pure interest.
+Code Starter / Hint:  v_r := v_rate/12/100; v_n := v_yrs*12; v_emi := ROUND(v_p * v_r * POWER(1+v_r,v_n) / (POWER(1+v_r,v_n) - 1), 2);
+Anti-Plagiarism Personalisation:  Roll Number Seed — principal = roll_no * 10000 + 50000.
+Worked Example:  Roll#1: P=60,000 => EMI~Rs.1,245.50, total interest~Rs.14,730 | Roll#25: P=3,00,000 => EMI~Rs.6,227.50
+
+answer
+
+
+
+DECLARE
+    v_roll NUMBER := 12;
+    v_principal NUMBER;
+    v_annual_rate NUMBER := 9;
+    v_years NUMBER := 5;
+    v_monthly_rate NUMBER;
+    v_total_months NUMBER;
+    v_emi NUMBER;
+    v_total_payment NUMBER;
+    v_total_interest NUMBER;
+    v_interest_percentage NUMBER;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Roll Number = ' || v_roll);
+    v_principal := v_roll * 10000 + 50000;
+    v_monthly_rate := v_annual_rate / 12 / 100;
+    v_total_months := v_years * 12;
+    v_emi := ROUND(
+        v_principal * v_monthly_rate *
+        POWER(1 + v_monthly_rate, v_total_months) /
+        (POWER(1 + v_monthly_rate, v_total_months) - 1),
+        2
+    );
+    v_total_payment := ROUND(v_emi * v_total_months, 2);
+    v_total_interest := ROUND(v_total_payment - v_principal, 2);
+    v_interest_percentage := ROUND(
+        (v_total_interest / v_total_payment) * 100, 2);
+
+    DBMS_OUTPUT.PUT_LINE('Principal Amount     : Rs. ' ||
+        TO_CHAR(v_principal,'99,99,999.99'));
+    DBMS_OUTPUT.PUT_LINE('Monthly EMI          : Rs. ' ||
+        TO_CHAR(v_emi,'99,99,999.99'));
+    DBMS_OUTPUT.PUT_LINE('Total Payment        : Rs. ' ||
+        TO_CHAR(v_total_payment,'99,99,999.99'));
+    DBMS_OUTPUT.PUT_LINE('Total Interest       : Rs. ' ||
+        TO_CHAR(v_total_interest,'99,99,999.99'));
+    DBMS_OUTPUT.PUT_LINE('Interest Percentage  : ' ||
+        v_interest_percentage || '%');
+END;
+/
+
+Output:
+Roll Number = 12
+Principal Amount     : Rs.   1,70,000.00
+Monthly EMI	     : Rs.	3,528.92
+Total Payment	     : Rs.   2,11,735.20
+Total Interest	     : Rs.     41,735.20
+Interest Percentage  : 19.71%
+
+P1.18  Messy Name Cleaner   [Medium]  [TRIM, INITCAP, REPLACE, LOWER, LENGTH, SUBSTR, INSTR]
+Problem Statement:  Admission forms arrive with messy names like "  pankti   PATEL " (extra spaces, wrong case). Write a block that: (1) TRIMs leading/trailing spaces, (2) collapses double spaces using REPLACE(name, '  ', ' ') — apply twice and explain why once may not be enough, (3) applies INITCAP, (4) extracts first and last name using SUBSTR/INSTR, (5) generates college email = LOWER(firstname || '.' || lastname || '@ljku.edu.in'). Print cleaned name, first, last, email and LENGTH before vs after cleaning.
+Code Starter / Hint:  v_clean := INITCAP(REPLACE(REPLACE(TRIM(v_raw),'  ',' '),'  ',' ')); v_first := SUBSTR(v_clean,1,INSTR(v_clean,' ')-1); v_email := LOWER(v_first||'.'||v_last||'@ljku.edu.in');
+Anti-Plagiarism Personalisation:  Name-Based Input — use your own name typed messily (extra spaces + random case).
+Worked Example:  "  pankti   PATEL " => "Pankti Patel", first=Pankti, last=Patel, email=pankti.patel@ljku.edu.in
+
+answer
+
+P1.19  Bank Branch Hierarchy — Nested Scope   [Medium]  [Nested blocks, block labels, scope rules, compile errors]
+Problem Statement:  Model a bank as 3 nested blocks. Outer <<bank>>: v_bank := 'LJ Bank', v_total_deposit := 0. Middle <<branch>>: v_branch := your home city, add a deposit into bank.v_total_deposit. Inner <<counter>>: declare v_token, print bank name + branch + token — proving inner can read BOTH outer levels. After the inner block ends, add a commented-out line in the middle block that tries to print v_token, run once uncommented, and note the exact error (PLS-00201). Finally print total deposit at bank level.
+Code Starter / Hint:  <<bank>> DECLARE v_total NUMBER:=0; BEGIN <<branch>> DECLARE v_branch VARCHAR2(30):='Rajkot'; BEGIN bank.v_total := bank.v_total + v_dep; DECLARE v_token NUMBER:=1; BEGIN ... END; END; END;
+Anti-Plagiarism Personalisation:  Roll Number Seed + Name-Based — branch = your home city, deposit = roll_no * 1000.
+Worked Example:  Roll#7 from Rajkot: deposit=7000 => inner prints "LJ Bank | Rajkot | Token 1", bank total=7000
+
+answer
+
+
+
+<<bank>>
+DECLARE
+    v_bank_name VARCHAR2(30) := 'LJ Bank';
+    v_total_deposit NUMBER := 100;
+
+BEGIN
+    <<branch>>
+    DECLARE
+        v_branch_name VARCHAR2(30) := 'Ahmedabad';
+        v_deposit NUMBER := 100;   
+    BEGIN
+        bank.v_total_deposit := bank.v_total_deposit + v_deposit;
+
+        <<counter>>
+        DECLARE
+            v_token NUMBER := 1;
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('Bank   : ' || bank.v_bank_name);
+            DBMS_OUTPUT.PUT_LINE('Branch : ' || v_branch_name);
+            DBMS_OUTPUT.PUT_LINE('Token  : ' || v_token);
+        END;
+    END;
+    DBMS_OUTPUT.PUT_LINE('Total Deposit : ' || bank.v_total_deposit);
+END;
+/
+
+Output:
+Bank   : LJ Bank
+Branch : Ahmedabad
+Token  : 1
+Total Deposit : 200
+
+P1.20  Railway PNR and Ticket Generator   [Hard]  [String functions, LPAD, TO_CHAR, date arithmetic, MONTHS_BETWEEN]
+Problem Statement:  Build an IRCTC-style ticket generator. Inputs: passenger name, dob, roll_no. Steps: (1) PNR = 'GJ' || TO_CHAR(SYSDATE,'YYMM') || LPAD(roll_no, 4, '0'), (2) journey date = SYSDATE + (roll_no MOD 30 + 1), printed as Day, DD-MON-YYYY, (3) base fare = roll_no * 50 + 200, (4) age = TRUNC(MONTHS_BETWEEN(SYSDATE, dob)/12); senior citizens (60+) get 40% concession — compute final fare with NVL2-style logic, (5) print the full ticket aligned with RPAD/LPAD like a printed counter ticket.
+Code Starter / Hint:  v_pnr := 'GJ'||TO_CHAR(SYSDATE,'YYMM')||LPAD(v_roll,4,'0'); v_jdate := SYSDATE + (v_roll MOD 30 + 1); v_age := TRUNC(MONTHS_BETWEEN(SYSDATE,v_dob)/12);
+Anti-Plagiarism Personalisation:  Roll Number Seed + Name-Based — your name, your DOB; test a second run with DOB 01-Jan-1960 to trigger the senior concession.
+Worked Example:  Roll#1 in Jul-2026: PNR=GJ26070001, journey=+2 days, fare=250 | DOB 1960 => age 66, fare=150 after 40% off
+
+answer
+
+
+
+DECLARE
+    v_name VARCHAR2(30) := 'Rohan Shah';
+    v_dob DATE := TO_DATE('15-MAR-2004','DD-MON-YYYY');
+    v_roll NUMBER := 1;
+    v_pnr VARCHAR2(20);
+    v_journey_date DATE;
+    v_base_fare NUMBER;
+    v_age NUMBER;
+    v_final_fare NUMBER;
+BEGIN
+    v_pnr := 'GJ' || TO_CHAR(SYSDATE,'YYMM') || LPAD(v_roll,4,'0');
+    v_journey_date := SYSDATE + (MOD(v_roll,30) + 1);
+    v_base_fare := v_roll * 50 + 200;
+    v_age := TRUNC(MONTHS_BETWEEN(SYSDATE,v_dob)/12);
+    IF v_age >= 60 THEN
+        v_final_fare := v_base_fare * 0.60;   -- 40% concession
+    ELSE
+        v_final_fare := v_base_fare;
+    END IF;
+    DBMS_OUTPUT.PUT_LINE('          IRCTC RAILWAY TICKET');
+    DBMS_OUTPUT.PUT_LINE(RPAD('Passenger',15) || ': ' || v_name);
+    DBMS_OUTPUT.PUT_LINE(RPAD('PNR',15) || ': ' || v_pnr);
+    DBMS_OUTPUT.PUT_LINE(RPAD('Journey Date',15) || ': ' ||
+                         TO_CHAR(v_journey_date,'Day, DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE(RPAD('Age',15) || ': ' || v_age);
+    DBMS_OUTPUT.PUT_LINE(RPAD('Base Fare',15) || ': Rs. ' || v_base_fare);
+    DBMS_OUTPUT.PUT_LINE(RPAD('Final Fare',15) || ': Rs. ' || v_final_fare);
+
+END;
+/
+
+Output:
+IRCTC RAILWAY TICKET
+Passenger      : Rohan Shah
+PNR	       : GJ26070001
+Journey Date   : Tuesday  , 14-JUL-2026
+Age	       : 22
+Base Fare      : Rs. 250
+Final Fare     : Rs. 250
+
