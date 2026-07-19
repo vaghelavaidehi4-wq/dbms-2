@@ -1,0 +1,331 @@
+P1.1  My First PL/SQL Block   [Easy]  [Block structure, DBMS_OUTPUT, SET SERVEROUTPUT ON]
+Problem Statement:  Write an anonymous block: (a) Print your name and roll number. (b) Declare v_message VARCHAR2(100), assign "Welcome to PL/SQL!", print it. (c) Calculate roll_no MOD 7 + 1 and call it your "lucky number", print it. Run SET SERVEROUTPUT ON first. Observe: what happens if you forget it?
+Code Starter / Hint:  SET SERVEROUTPUT ON; DECLARE v_message VARCHAR2(100) := 'Welcome!'; BEGIN DBMS_OUTPUT.PUT_LINE(v_message); DBMS_OUTPUT.PUT_LINE('Lucky: '||(roll_no MOD 7+1)); END;
+Anti-Plagiarism Personalisation:  Roll Number Seed — lucky number = roll_no MOD 7 + 1.
+Worked Example:  Roll#1: lucky=2 | Roll#7: lucky=1 | Roll#25: lucky=4 | Roll#42: lucky=7
+
+answer
+
+DECLARE
+  v_message VARCHAR2(100):='Welcome to PL/SQL!';
+  v_roll NUMBER:=25;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Name: Your Name');
+  DBMS_OUTPUT.PUT_LINE('Roll: '||v_roll);
+  DBMS_OUTPUT.PUT_LINE(v_message);
+  DBMS_OUTPUT.PUT_LINE('Lucky Number: '||(MOD(v_roll,7)+1));
+END;
+/
+
+Output:
+Name: Your Name
+Roll: 25
+Welcome to PL/SQL!
+Lucky Number: 5
+
+P1.2  Variables and Data Types   [Easy]  [NUMBER, VARCHAR2, DATE, BOOLEAN, arithmetic]
+Problem Statement:  Declare variables: v_name VARCHAR2(50), v_marks NUMBER(5,2), v_percentage NUMBER(5,2), v_dob DATE, v_passed BOOLEAN. Use your own name and last semester marks. Calculate percentage = (marks/500)*100. Print: name, marks, percentage (ROUND to 2 decimals), today's date using SYSDATE. Print "PASS" or "FAIL" based on v_passed.
+Code Starter / Hint:  v_percentage := ROUND((v_marks/500)*100, 2); DBMS_OUTPUT.PUT_LINE(v_name||' | Marks:'||v_marks||' | %:'||v_percentage);
+Anti-Plagiarism Personalisation:  Name-Based Input — your own name and actual total marks from last semester.
+Worked Example:  Aarav Shah, marks=420 => 84.00% PASS | Priya Patel, marks=240 => 48.00% FAIL
+
+answer
+
+DECLARE
+  v_name VARCHAR2(50):='dev';
+  v_marks NUMBER:=420;
+  v_pct NUMBER;
+  v_passed BOOLEAN:=TRUE;
+BEGIN
+  v_pct:=ROUND(v_marks/500*100,2);
+  DBMS_OUTPUT.PUT_LINE(v_name);
+  DBMS_OUTPUT.PUT_LINE('Marks: '||v_marks);
+  DBMS_OUTPUT.PUT_LINE('Percentage: '||v_pct);
+  DBMS_OUTPUT.PUT_LINE('Date: '||SYSDATE);
+END;
+/
+
+Output:
+dev
+Marks: 420
+Percentage: 84
+Date: 12-JUL-26
+
+P1.3  Constants, NULL and NVL   [Easy]  [CONSTANT, NULL, NVL, NVL2, GST calculation]
+Problem Statement:  Part A: Declare CONSTANT c_gst_rate NUMBER := 18. Calculate GST breakdown: CGST=9%, SGST=9% on base_price. Print: base price, CGST amount, SGST amount, total. Part B: Declare v_city VARCHAR2(50) := NULL. Use NVL to replace with "Ahmedabad". Use NVL2: if city not null print "City Known: [city]" else print "City Unknown". Show difference between NVL and NVL2 clearly.
+Code Starter / Hint:  c_gst CONSTANT NUMBER := 18; v_cgst := base_price * 9/100; v_total := base_price + v_cgst*2; DBMS_OUTPUT.PUT_LINE(NVL(v_city,'Ahmedabad'));
+Anti-Plagiarism Personalisation:  Roll Number Seed — base_price = roll_no * 500 + 1000.
+Worked Example:  Roll#1: base=1500, CGST=135, SGST=135, total=1770 | Roll#25: base=13500, CGST=1215, total=15930
+
+answer
+
+DECLARE
+ c_gst CONSTANT NUMBER:=18;
+ base_price NUMBER:=1500;
+ cgst NUMBER;
+ sgst NUMBER;
+ total NUMBER;
+ v_city VARCHAR2(50):=NULL;
+BEGIN
+ cgst:=base_price*9/100; 
+ sgst:=cgst;
+ total:=base_price+cgst+sgst;
+ DBMS_OUTPUT.PUT_LINE(NVL(v_city,'Ahmedabad'));
+ DBMS_OUTPUT.PUT_LINE(NVL2(v_city,'City Known: '||v_city,'City Unknown'));
+END;
+/
+
+Output:
+TOTAL: 1770
+Ahmedabad
+City Unknown
+
+P1.4  SELECT INTO — Employee Data Fetcher   [Easy]  [SELECT INTO, %TYPE, NO_DATA_FOUND]
+Problem Statement:  Declare v_fname using employees.first_name%TYPE and v_sal using employees.salary%TYPE. Fetch first_name and salary of a specific employee using SELECT INTO. Print: "Employee: [name] earns Rs.[salary] per month." Add EXCEPTION WHEN NO_DATA_FOUND THEN print "Employee not found — check the ID." Test both: a valid ID and a non-existent ID.
+Code Starter / Hint:  SELECT first_name, salary INTO v_fname, v_sal FROM employees WHERE employee_id = v_id; EXCEPTION WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Not found');
+Anti-Plagiarism Personalisation:  Roll Number Seed — employee_id = 100 + (roll_no MOD 7). Test also with emp_id = roll_no (likely not found).
+Worked Example:  Roll#1: emp_id=101 => Steven King, Rs.17000 | Roll#8: emp_id=108 => Nancy Greenberg, Rs.12000
+
+answer
+
+DECLARE
+ v_id NUMBER:=101;
+ v_fname employees.first_name%TYPE;
+ v_sal employees.salary%TYPE;
+BEGIN
+ SELECT first_name,salary INTO v_fname,v_sal FROM employees WHERE employee_id=v_id;
+ DBMS_OUTPUT.PUT_LINE(v_fname||' '||v_sal);
+END;
+/
+
+Output:
+Steven 17000
+
+P1.5  %ROWTYPE — Employee Profile Card   [Medium]  [%ROWTYPE, TO_CHAR, MONTHS_BETWEEN]
+Problem Statement:  Declare v_emp employees%ROWTYPE. Fetch the full row for your employee (emp_id = 100 + roll_no MOD 9 + 1). Print a formatted profile card: Name, Job ID, Department ID, Salary formatted as "Rs.XX,XXX" using TO_CHAR, Hire Date as DD-MON-YYYY, Years of Experience = TRUNC(MONTHS_BETWEEN(SYSDATE, v_emp.hire_date)/12). Add: if experience > 10 years print "Senior Employee".
+Code Starter / Hint:  SELECT * INTO v_emp FROM employees WHERE employee_id=v_id; DBMS_OUTPUT.PUT_LINE(TO_CHAR(v_emp.salary,'Rs.99,999')); v_yrs := TRUNC(MONTHS_BETWEEN(SYSDATE,v_emp.hire_date)/12);
+Anti-Plagiarism Personalisation:  Roll Number Seed — employee_id = 100 + (roll_no MOD 9) + 1.
+Worked Example:  Roll#1: emp_id=102 (Lex De Haan, hired 2001 => ~23 yrs, Senior) | Roll#9: emp_id=110
+
+answer
+
+CREATE TABLE employees (
+    employee_id NUMBER PRIMARY KEY,
+    first_name VARCHAR2(20),
+    last_name VARCHAR2(20),
+    job_id VARCHAR2(20),
+    salary NUMBER(8,2),
+    hire_date DATE,
+    department_id NUMBER
+);
+
+INSERT INTO employees
+VALUES (101, 'Steven', 'King', 'AD_PRES', 24000, DATE '2003-06-17', 90);
+
+INSERT INTO employees
+VALUES (102, 'Lex', 'De Haan', 'AD_VP', 17000, DATE '2001-01-13', 90);
+
+INSERT INTO employees
+VALUES (108, 'Nancy', 'Greenberg', 'FI_MGR', 12000, DATE '2002-08-17', 100);
+
+INSERT INTO employees
+VALUES (110, 'John', 'Chen', 'FI_ACCOUNT', 8200, DATE '2005-09-28', 100);
+
+COMMIT;
+
+DECLARE
+ v_emp employees%ROWTYPE;
+BEGIN
+ SELECT * INTO v_emp FROM employees WHERE employee_id=101;
+ DBMS_OUTPUT.PUT_LINE(v_emp.first_name||' '||v_emp.job_id);
+END;
+/
+
+Output:
+Steven AD_PRES
+
+P1.6  Bank Interest Calculator — SI and CI   [Medium]  [Arithmetic, POWER, formatted output]
+Problem Statement:  Build a bank interest calculator. Variables: principal, rate (%), years. Calculate: (1) Simple Interest = P*R*T/100, (2) Compound Interest = P*(1+R/100)^T - P using POWER function, (3) Final amounts for both. Print a comparison: show SI vs CI difference. If CI > SI by more than 10%: print "Tip: FD is better than savings account for this amount." Use TO_CHAR to format amounts with commas.
+Code Starter / Hint:  v_si := v_p * v_r * v_t / 100; v_ci := v_p * (POWER(1 + v_r/100, v_t)) - v_p; v_diff_pct := (v_ci - v_si) / v_si * 100;
+Anti-Plagiarism Personalisation:  Roll Number Seed — principal = roll_no * 1000, rate = birth_month * 0.5 + 4, years = 3.
+Worked Example:  Roll#1 born Jan: P=1000,R=4.5%,SI=135,CI=141 | Roll#25 born Jun: P=25000,R=7%,SI=5250,CI=5768
+
+answer
+
+DECLARE
+ p NUMBER:=10000; 
+r NUMBER:=7; 
+t NUMBER:=3;
+ si NUMBER; 
+ci NUMBER;
+BEGIN
+ si:=p*r*t/100;
+ ci:=p*POWER(1+r/100,t)-p;
+ DBMS_OUTPUT.PUT_LINE('SI='||ROUND(si,2));
+ DBMS_OUTPUT.PUT_LINE('CI='||ROUND(ci,2));
+END;
+/
+
+Output:
+SI=2100
+CI=2250.43
+
+P1.7  Nested Blocks — Scope Explorer   [Medium]  [Nested PL/SQL blocks, variable shadowing, scope]
+Problem Statement:  Create 3 levels of nested blocks. Outer: v_city="Gujarat", v_num=100. Middle: v_city="Ahmedabad" (shadows outer), v_num=200. Inner: v_num=300. Inside each level: print v_city and v_num. After middle block ends, prove outer v_city is still "Gujarat". Use block labels (<<outer>>, <<middle>>) and demonstrate accessing outer variable from inner using outer.v_city. This shows exactly how Oracle handles variable scope.
+Code Starter / Hint:  <<outer>> DECLARE v_city VARCHAR2(30):='Gujarat'; BEGIN <<middle>> DECLARE v_city VARCHAR2(30):='Ahmedabad'; BEGIN DBMS_OUTPUT.PUT_LINE(v_city); DBMS_OUTPUT.PUT_LINE(outer.v_city); END; DBMS_OUTPUT.PUT_LINE(v_city); END;
+Anti-Plagiarism Personalisation:  Name-Based Input — outer block v_city = your home city/district, middle block v_city = "Ahmedabad".
+
+answer
+
+<<outer>>
+DECLARE
+    v_city VARCHAR2(30) := 'Gujarat';
+    v_num NUMBER := 100;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Outer Block');
+    DBMS_OUTPUT.PUT_LINE('City : ' || v_city);
+    DBMS_OUTPUT.PUT_LINE('Number : ' || v_num);
+
+    <<middle>>
+    DECLARE
+        v_city VARCHAR2(30) := 'Ahmedabad';
+        v_num NUMBER := 200;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Middle Block');
+        DBMS_OUTPUT.PUT_LINE('City : ' || v_city);
+        DBMS_OUTPUT.PUT_LINE('Outer City : ' || outer.v_city);
+        DBMS_OUTPUT.PUT_LINE('Number : ' || v_num);
+
+        DECLARE
+            v_num NUMBER := 300;
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('Inner Block');
+            DBMS_OUTPUT.PUT_LINE('City : ' || outer.v_city);
+            DBMS_OUTPUT.PUT_LINE('Outer City : ' || outer.v_city);
+            DBMS_OUTPUT.PUT_LINE('Number : ' || v_num);
+        END;
+
+    END;
+
+    DBMS_OUTPUT.PUT_LINE('After Middle Block');
+    DBMS_OUTPUT.PUT_LINE('City : ' || v_city);
+    DBMS_OUTPUT.PUT_LINE('Number : ' || v_num);
+
+END;
+/
+
+Output:
+Outer Block
+City : Gujarat
+Number : 100
+Middle Block
+City : Ahmedabad
+Outer City : Gujarat
+Number : 200
+Inner Block
+City : Gujarat
+Outer City : Gujarat
+Number : 300
+After Middle Block
+City : Gujarat
+Number : 100
+
+P1.8  Student ID Card Generator — String Functions   [Hard]  [SUBSTR, INSTR, UPPER, LPAD, RPAD, LENGTH, TO_CHAR, REPLACE]
+Problem Statement:  Build a "LJICA Student ID Card Generator". Input: full_name, roll_no, dob. Steps: (1) Convert name to UPPER, (2) Extract first name using SUBSTR(name, 1, INSTR(name," ")-1), (3) Generate ID = "LJICA"||TO_CHAR(dob,"YYYY")||LPAD(roll_no,3,"0"), (4) Calculate age from DOB, (5) Print formatted card using RPAD/LPAD for alignment (like a printed ID card). Bonus: if LENGTH(full_name)>20 then abbreviate last name to first initial.
+Code Starter / Hint:  v_upper := UPPER(v_name); v_first := SUBSTR(v_name,1,INSTR(v_name,' ')-1); v_id := 'LJICA'||TO_CHAR(v_dob,'YYYY')||LPAD(v_roll,3,'0'); v_age := TRUNC(MONTHS_BETWEEN(SYSDATE,v_dob)/12);
+Anti-Plagiarism Personalisation:  Name-Based Input — use your own full name (as it appears on ID), actual date of birth, your roll number.
+Worked Example:  Aarav Shah, DOB 15-Mar-2004, Roll#5 => ID: LJICA2004005, age=22 | Priya Patel, DOB 22-Jun-2003, Roll#25 => LJICA2003025
+
+answer
+
+DECLARE
+    v_name      VARCHAR2(50) := 'Aarav Shah';
+    v_roll      NUMBER := 5;
+    v_dob       DATE := TO_DATE('15-MAR-2004','DD-MON-YYYY');
+
+    v_upper     VARCHAR2(50);
+    v_first     VARCHAR2(30);
+    v_id        VARCHAR2(20);
+    v_age       NUMBER;
+BEGIN
+    v_upper := UPPER(v_name);
+    v_first := SUBSTR(v_name, 1, INSTR(v_name,' ') - 1);
+    v_id := 'LJICA' || TO_CHAR(v_dob,'YYYY') || LPAD(v_roll,3,'0');
+    v_age := TRUNC(MONTHS_BETWEEN(SYSDATE,v_dob)/12);
+
+   
+    DBMS_OUTPUT.PUT_LINE('=====================================');
+    DBMS_OUTPUT.PUT_LINE('        LJICA STUDENT ID');
+    DBMS_OUTPUT.PUT_LINE('=====================================');
+    DBMS_OUTPUT.PUT_LINE(RPAD('Name',15) || ': ' || v_name);
+    DBMS_OUTPUT.PUT_LINE(RPAD('Upper Name',15) || ': ' || v_upper);
+    DBMS_OUTPUT.PUT_LINE(RPAD('First Name',15) || ': ' || v_first);
+    DBMS_OUTPUT.PUT_LINE(RPAD('Roll No',15) || ': ' || LPAD(v_roll,3,'0'));
+    DBMS_OUTPUT.PUT_LINE(RPAD('DOB',15) || ': ' || TO_CHAR(v_dob,'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE(RPAD('Age',15) || ': ' || v_age);
+    DBMS_OUTPUT.PUT_LINE(RPAD('Student ID',15) || ': ' || v_id);
+    DBMS_OUTPUT.PUT_LINE('=====================================');
+END;
+/
+
+Output:
+=====================================
+LJICA STUDENT ID
+=====================================
+Name	       : Aarav Shah
+Upper Name     : AARAV SHAH
+First Name     : Aarav
+Roll No        : 005
+DOB	       : 15-MAR-2004
+Age	       : 22
+Student ID     : LJICA2004005
+=====================================
+
+
+P1.9  Torrent Power Electricity Bill   [Easy]  [Variables, arithmetic, ROUND, concatenation]
+Problem Statement:  Build a simple electricity bill for Torrent Power. Declare: v_units NUMBER, c_rate CONSTANT NUMBER := 5 (Rs. per unit), c_fixed CONSTANT NUMBER := 70 (fixed monthly charge). Calculate: energy_charge = units * rate, total = energy_charge + fixed charge. Print a mini bill: consumer name (your name), units consumed, energy charge, fixed charge, and total, each on its own line using DBMS_OUTPUT.PUT_LINE.
+Code Starter / Hint:  c_rate CONSTANT NUMBER := 5; v_energy := v_units * c_rate; v_total := v_energy + c_fixed; DBMS_OUTPUT.PUT_LINE('Total: Rs.'||v_total);
+Anti-Plagiarism Personalisation:  Roll Number Seed — units = roll_no * 10 + 50.
+Worked Example:  Roll#1: units=60, energy=300, fixed=70, total=370 | Roll#25: units=300, energy=1500, total=1570
+
+answer
+
+DECLARE
+ v_units NUMBER:=100;
+ c_rate CONSTANT NUMBER:=5;
+ c_fixed CONSTANT NUMBER:=70;
+BEGIN
+ DBMS_OUTPUT.PUT_LINE('Total: '||(v_units*c_rate+c_fixed));
+END;
+/
+
+Output:
+Total: 570
+
+P1.10  Temperature Converter   [Easy]  [Arithmetic, ROUND, operator precedence]
+Problem Statement:  Declare v_celsius NUMBER. Convert to Fahrenheit using F = C*9/5 + 32 and to Kelvin using K = C + 273.15. Print all three values, rounding Fahrenheit to 1 decimal. Then reverse: take v_f NUMBER := 98.6 and convert back to Celsius, verify you get 37. Observe: what happens if you write C*9/5+32 without brackets vs C*(9/5)+32 — is the result different? Why or why not?
+Code Starter / Hint:  v_f := ROUND(v_c * 9/5 + 32, 1); v_k := v_c + 273.15; v_c2 := (v_f2 - 32) * 5/9;
+Anti-Plagiarism Personalisation:  Roll Number Seed — celsius = roll_no MOD 20 + 25.
+Worked Example:  Roll#1: C=26 => F=78.8, K=299.15 | Roll#25: C=30 => F=86, K=303.15
+
+answer
+
+DECLARE
+ c NUMBER:=30;
+ f NUMBER; 
+k NUMBER; 
+c2 NUMBER;
+BEGIN
+ f:=ROUND(c*9/5+32,1);
+ k:=c+273.15;
+ c2:=ROUND((98.6-32)*5/9,1);
+ DBMS_OUTPUT.PUT_LINE('F='||f);
+ DBMS_OUTPUT.PUT_LINE('K='||k);
+ DBMS_OUTPUT.PUT_LINE('98.6F='||c2||'C');
+END;
+/
+
+Output:
+F=86
+K=303.15
+98.6F=37C
